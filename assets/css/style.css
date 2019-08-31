@@ -60,11 +60,9 @@ div.food-image-div {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	width: 175px;
 	margin: 0 auto;
 }
 .food-image {
-	width: 150px;
 	margin: 0 auto;
 }
 #caloriesButton {
