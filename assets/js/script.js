@@ -119,6 +119,8 @@ const script = function () {
             document.getElementById("cardContainer").innerHTML = "";
             
             data.common.forEach(element => {
+				const calories = parseInt("2");
+				const servings = 2;
                 //clones template node
                 let template = document.getElementById("cardTemplate").children[0].cloneNode(true);
 
@@ -126,37 +128,26 @@ const script = function () {
                 template.getElementsByClassName("card-header-title")[0].innerHTML = element.food_name.toUpperCase();
 
                 //Adding the image to a new created div
-                let photoDiv = document.createElement("div");
-                photoDiv.className += " column"
-                photoDiv.className += " is-one-quarter";
-                photoDiv.className += " is-mobile";
-                let image = document.createElement("img");
+                let image = template.getElementsByClassName("food-image")[0];
                 image.src = element.photo.thumb;
-                photoDiv.append(image);
-                template.getElementsByClassName("content")[0].append(photoDiv);
 
                 //Div for Information added
-                let infoDiv = document.createElement("div");
-                infoDiv.className += " column";
-                infoDiv.className += " is-half";
-                infoDiv.className += " is-mobile";
-                infoDiv.innerHTML = "Calories: " + //Need to figure out solution for this area, endpoint for common doesn't give calories
-                template.getElementsByClassName("content")[0].append(infoDiv);
-
-                //Creating Buttons
-                let buttonsDiv = document.createElement("div");
-                buttonsDiv.className += " column";
-                buttonsDiv.className += " is-one-quarter";
-                buttonsDiv.className += " is-mobile";
-                let createButton = document.createElement("a");
-                createButton.className += "button";
-                createButton.className += "is-link";
-                createButton.innerHTML = "Add +";
-                //Spot here for buttons queryselector
-                
+                const caloriesDiv = document.getElementsByClassName("calories")[0];
+                caloriesDiv.innerHTML = calories;//Need to figure out solution for this area, endpoint for common doesn't give calories
+                document.getElementsByClassName("calories")[1].innerHTML = calories;
+				
+                const createButton = template.getElementsByClassName("ate-food-button")[0];
+				createButton.setAttribute("data-calories", calories);
+				createButton.addEventListener("click", function clickHandler() {
+					const caloriesEaten = parseInt(this.getAttribute("data-calories"));
+					const calories = parseInt(document.getElementById("caloriesRemaining").textContent) - caloriesEaten;
+					localStorage.setItem("calories", calories);
+					_updateFitbitCalories(calories);
+					this.setAttribute("disabled", "disabled");
+					// only allow the button to be pressed once
+					this.removeEventListener("click", clickHandler);
+				});
                 //
-                buttonsDiv.append(createButton);
-                template.getElementsByClassName("content")[0].append(buttonsDiv);
 
                 document.getElementById("cardContainer").append(template);
             });
@@ -179,31 +170,5 @@ const script = function () {
 		}
         _initBulma();
         document.getElementById("form").addEventListener("submit", _searchRequest);
-		document.querySelectorAll(".ate-food-button").forEach(function(button) {
-			button.addEventListener("click", function() {
-				// only allow the button to be pressed once
-				if (this.getAttribute("disabled") !== "disabled") {
-					const caloriesEaten = parseInt(this.getAttribute("data-calories"));
-					const calories = parseInt(document.getElementById("caloriesRemaining").textContent) - caloriesEaten;
-					localStorage.setItem("calories", calories);
-					_updateFitbitCalories(calories);
-					this.setAttribute("disabled", "disabled");
-				}
-			});
-		});
     });
 }();
-
-document.addEventListener("onclick", function (){
-   
-})
-
-const newTr = document.createElement("tr");
-const newTd1 = document.createElement("td");
-newTd1.textContent = "content from local storage";
-const newTd2 = document.createElement("td");
-newTd2.textContent = "content from local storage";
-const newTd3 = document.createElement("td");
-newTd3.textContent = "content from local storage";
-newTr.appendChild(newTd1. newTd2, newTd3);
-document.getElementById("tbody").appendChild(newTr);
