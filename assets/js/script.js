@@ -242,13 +242,8 @@ const script = function () {
 			if (Number.isInteger(caloriesEaten)) {
 				let caloriesRemaining = parseInt(document.getElementById("caloriesRemaining").textContent);
 				caloriesRemaining = caloriesRemaining - caloriesEaten;
-				const updateFitbit = document.getElementById("updateFitbitCheckbox").checked;
 				localStorage.setItem("calories", caloriesRemaining);
-				if (updateFitbit) {
-					_updateFitbitCalories(caloriesRemaining);
-				} else {
-					_displayCalories(caloriesRemaining, 250);
-				}
+				_updateFitbitCalories(caloriesRemaining);
 			}
 			_clearCaloriesModal(this);
 		});
