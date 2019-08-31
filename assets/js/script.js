@@ -213,6 +213,10 @@ const script = function () {
 		// if there's an access token saved
 		_displayFitbitLogin(_params["access_token"] === void 0);
         _initBulma();
+		document.getElementById("fitbitLogoutButton").addEventListener("click", function () {
+			_deleteAccessToken();
+			_displayFitbitLogin(true);
+		});
         document.getElementById("form").addEventListener("submit", _searchRequest);
 		document.getElementById("caloriesButton").addEventListener("click", function () {
 			if (localStorage.getItem("calories") !== null) {
