@@ -239,7 +239,7 @@ const script = function () {
 		);
 		document.getElementById("saveCalorieGoal").addEventListener("click", function () {
 			const caloriesEaten = parseInt(document.getElementById("caloriesEatenInput").value);
-			if (caloriesEaten > 0) {
+			if (Number.isInteger(caloriesEaten)) {
 				let caloriesRemaining = parseInt(document.getElementById("caloriesRemaining").textContent);
 				caloriesRemaining = caloriesRemaining - caloriesEaten;
 				const updateFitbit = document.getElementById("updateFitbitCheckbox").checked;

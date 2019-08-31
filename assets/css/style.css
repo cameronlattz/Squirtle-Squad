@@ -24,6 +24,7 @@ body {
 #caloriesRemaining {
     font-size: 1.5em;
 	transition: opacity 0.5s ease-out;
+	margin-left: 5px;
 }
 #form {
     width: 100%;
@@ -77,4 +78,7 @@ div.food-image-div {
 }
 .message-footer {
 	padding-bottom: 5px;
+}
+.login-button {
+	display: none;
 }
