@@ -1,4 +1,4 @@
 # Squirtle-Squad
 First Project
 
-https://redchristian77.github.io/Squirtle-Squad/
+https://cameronlattz.github.io/Squirtle-Squad/
