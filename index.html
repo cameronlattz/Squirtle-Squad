@@ -5,17 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Calorie Tracker</title>
-    <script src="assets/js/script.js"></script>
+    <title>Nutri-Tracker</title>
     <link href="favicon.png" rel="icon" type="image/x-png">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css" rel="stylesheet">
+	<link href="assets/css/bulma.min.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
     <link href="assets/css/nutrition.css" rel="stylesheet">
+    <script src="assets/js/script.js"></script>
+    <script src="assets/js/history.js"></script>
+    <script src="assets/js/home.js"></script>
 </head>
 
 <body>
     <div id="container">
-        <nav class="navbar is-fixed-top has-background-white-bis" role="navigation" aria-label="main navigation">
+        <nav class="navbar is-fixed-top has-background-light" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
                 <span class="navbar-item is-paddingless">
 					<a class="button is-marginless is-info" id="caloriesButton">
@@ -31,13 +33,13 @@
             </div>
             <div id="navbar" class="navbar-menu">
                 <div class="navbar-start">
-                    <a href="./" class="navbar-item">
+                    <a href="./" class="navbar-item is-tab is-active">
                         Home
                     </a>
-                    <a href="history.html" class="navbar-item">
+                    <a href="history.html" class="navbar-item is-tab">
                         History
                     </a>
-                    <a href="settings.html" class="navbar-item">
+                    <a href="settings.html" class="navbar-item is-tab">
                         Settings
                     </a>
 					<a id="fitbitLoginButton" class="navbar-item is-hidden" href="https://www.fitbit.com/oauth2/authorize
@@ -58,7 +60,7 @@
             <section class="main-content is-fullheight" id="content">
                 <div class="container">
                     <div class="section">
-                        <div class="field has-addons" id="searchField">
+                        <div class="field has-addons">
                             <div class="control" id="searchInputContainer">
                                 <input id="searchInput" type="text" class="input" placeholder="Enter a food to search...">
                             </div>
@@ -68,17 +70,43 @@
                         </div>
                         <div id="cardContainer">
                             <div class="card">
-                                <div class="card-header has-background-light">
-                                    <p class="card-header-title">Welcome to Calorie Tracker!</p>
+                                <div class="card-header has-background-grey-lighter">
+                                    <p class="card-header-title">Welcome to Nutri-Tracker!</p>
                                 </div>
                                 <div class="card-content">
                                     <div class="content has-text-centered">
 										<img src="assets/images/healthy.png"><br>
-										Search for a food to add it to your calorie log, or click your calorie counter on the top left to manually log calories.
+										Search for a food to add it to your calorie log, or click your calorie counter on the 
+										top left to manually log calories eaten. If logged into Fitbit, data will be synchronized 
+										with the Fitbit API.
 									</div>
                                 </div>
                             </div>
-                        </div>
+						</div>
+						<div id="loadingContainer" class="is-hidden">
+							<div class="card">
+								<div class="card-header has-background-grey-lighter">
+									<p class="card-header-title">Searching for your results</p>
+								</div>
+								<div class="card-content">
+									<div class="content has-text-centered">
+										<img src="assets/images/Searching.gif"><br>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="noresultsDiv" class="is-hidden">
+							<div class="card">
+								<div class="card-header has-background-grey-lighter">
+									<p class="card-header-title">No search Results Found</p>
+								</div>
+								<div class="card-content">
+									<div class="content has-text-centered">
+										<img src="assets/images/lesadpepe.jpg"><br>
+									</div>
+								</div>
+							</div>
+						</div>
                     </div>
                 </div>
             </section>
@@ -87,13 +115,24 @@
 			<div class="modal-background"></div>
 			<div class="modal-card">
 				<header class="modal-card-head">
-					<p class="modal-card-title">Update calorie log</p>
+					<p class="modal-card-title">Manually log food eaten</p>
 					<button class="delete clear-form" aria-label="close"></button>
 				</header>
 				<section class="modal-card-body">
 					<div class="field">
 						<div class="control">
-							<input class="input is-info" type="text" placeholder="Calories eaten" id="caloriesEatenInput">
+							<label>
+								Food name:
+								<input class="input is-info" type="text" placeholder="Food consumed" id="foodEatenInput">
+							</label>
+						</div>
+					</div>
+					<div class="field">
+						<div class="control">
+							<label>
+								Calories:
+								<input class="input is-info" type="text" placeholder="Calories eaten" id="caloriesEatenInput">
+							</label>
 						</div>
 					</div>
 				</section>
@@ -120,7 +159,7 @@
 		</div>
         <div id="cardTemplate" class="template">
             <div class="card">
-                <div class="card-header has-background-light">
+                <div class="card-header has-background-grey-lighter">
                     <p class="card-header-title">
 						Header
 					</p>
@@ -137,7 +176,7 @@
 							<section class="performance-facts">
 							  <header class="performance-facts__header">
 								<h1 class="performance-facts__title">Nutrition Facts</h1>
-								<p>Serving Size 1/2 cup (about 82g)</p>
+								<p class="servingSize">Serving Size 1/2 cup (about 82g)</p>
 							  </header>
 							  <table class="performance-facts__table">
 								<tbody>
@@ -156,58 +195,58 @@
 								  </tr>
 								  <tr>
 									<th colspan="2">
-									  <b>Total Fat</b> 14g
+									  <b>Total Fat</b><span class="totalFat"></span>g
 									</th>
 									<td>
-									  <b>22%</b>
+									  <b class="totalFatPercent">22%</b>
 									</td>
 								  </tr>
 								  <tr>
 									<td class="blank-cell">
 									</td>
 									<th>
-									  Saturated Fat 9g
+									  Saturated Fat <span class="saturatedFat"></span>g
 									</th>
 									<td>
-									  <b>22%</b>
+									  <b class="satFatPercent">22%</b>
 									</td>
 								  </tr>
 								  <tr>
 									<th colspan="2">
-									  <b>Cholesterol</b> 55mg
+									  <b>Cholesterol</b><span class="cholesterolID"></span>mg
 									</th>
 									<td>
-									  <b>18%</b>
+									  <b class="cholID">18%</b>
 									</td>
 								  </tr>
 								  <tr>
 									<th colspan="2">
-									  <b>Sodium</b> 40mg
+									  <b>Sodium</b><span class="sodiumID"></span>mg
 									</th>
 									<td>
-									  <b>2%</b>
+									  <b class="sodiumPercent">2%</b>
 									</td>
 								  </tr>
 								  <tr>
 									<th colspan="2">
-									  <b>Total Carb</b> 17g
+									  <b>Total Carb</b><span class="carbsID"></span>g
 									</th>
 									<td>
-									  <b>6%</b>
+									  <b class="carbsPercent">6%</b>
 									</td>
 								  </tr>
 								  <tr>
 									<td class="blank-cell">
 									</td>
 									<th>
-									  Sugars 14g
+									  Sugars <span class="sugarID"></span>g
 									</th>
 									<td>
 									</td>
 								  </tr>
 								  <tr>
 									<th colspan="2">
-									  <b>Protein</b> 3g
+									  <b>Protein</b><span class="proteinID"></span>g
 									</th>
 									<td>
 									</td>

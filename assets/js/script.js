@@ -1,61 +1,66 @@
-const script = function () {
+const script = (function () {
     let _params = {};
-	
-	const _clearCaloriesModal = function (element) {
-		const modalElement = element.closest(".modal");
-		modalElement.classList.remove("is-active");
-		modalElement.querySelectorAll("input").forEach(
-			input => {
-				input.value = "";
-				input.checked = false;
-			}
-		);
-	}
-	
-	const _deleteAccessToken = function () {
-		// otherwise get rid of the access_token param so we can grab it again next time
-		delete _params["access_token"];
-		localStorage.setItem("authentication", JSON.stringify(_params));
-		_displayFitbitLogin(true);
-	}
-	
-	const _displayMessage = function (message) {
-		const messageModal = document.getElementById("messageModal");
-		messageModal.getElementsByClassName("message-body")[0].innerHTML = message;
-		messageModal.classList.add("is-active");
-	}
-	
-	const _displayCalories = function (calories, timeout) {
-		document.getElementById("mealIcon").src = "assets/images/loading.gif";
-		document.getElementById("caloriesRemaining").style.opacity = "0";
-		setTimeout(function () {
-			if (calories !== void 0) {
-				document.getElementById("caloriesRemaining").textContent = calories;
-			}
-			document.getElementById("mealIcon").src = "assets/images/meal.png";
-			document.getElementById("caloriesRemaining").style.opacity = "1";
-		}, timeout);
-	}
-	
-	const _displayFitbitLogin = function (flag) {
-		if (flag) {
-			document.getElementById("fitbitLoginButton").classList.remove("is-hidden");
-			document.getElementById("fitbitLogoutButton").classList.add("is-hidden");
-		} else {
-			document.getElementById("fitbitLoginButton").classList.add("is-hidden");
-			document.getElementById("fitbitLogoutButton").classList.remove("is-hidden");
-		}
-	}
+
+    const _clearCaloriesModal = function (element) {
+        const modalElement = element.closest(".modal");
+        modalElement.classList.remove("is-active");
+        modalElement.querySelectorAll("input").forEach(
+            input => {
+                input.value = "";
+                input.checked = false;
+            }
+        );
+    }
+
+    const _deleteAccessToken = function () {
+        // otherwise get rid of the access_token param so we can grab it again next time
+        delete _params["access_token"];
+        localStorage.setItem("authentication", JSON.stringify(_params));
+        _displayFitbitLogin(true);
+    }
+
+    const _displayCalories = function (calories, timeout) {
+        document.getElementById("mealIcon").src = "assets/images/loading.gif";
+        document.getElementById("caloriesRemaining").style.opacity = "0";
+        setTimeout(function () {
+            if (calories !== void 0) {
+                document.getElementById("caloriesRemaining").textContent = calories;
+            }
+            document.getElementById("mealIcon").src = "assets/images/meal.png";
+            document.getElementById("caloriesRemaining").style.opacity = "1";
+        }, timeout);
+    }
+
+    const _displayFitbitLogin = function (flag) {
+        if (flag) {
+            document.getElementById("fitbitLoginButton").classList.remove("is-hidden");
+            document.getElementById("fitbitLogoutButton").classList.add("is-hidden");
+        } else {
+            document.getElementById("fitbitLoginButton").classList.add("is-hidden");
+            document.getElementById("fitbitLogoutButton").classList.remove("is-hidden");
+        }
+    }
+
+    const _displayMessage = function (message) {
+        const messageModal = document.getElementById("messageModal");
+        messageModal.getElementsByClassName("message-body")[0].innerHTML = message;
+        messageModal.classList.add("is-active");
+    }
 
 	// get day's remaining calories from fitbit
     const _getFitbitCalories = function () {
 		const completeFunction = function (calories) {
 			if (calories === void 0) {
-				calories = localStorage.getItem("calories");
+				calories = _getLocalCalories();
 			}
 			document.getElementById("caloriesRemaining").textContent = calories;
 			if (calories === null) {
-				_displayMessage("This page won't work until you set a Calorie Goal. Please log in to Fitbit or manually set your Calorie Goal in the settings page.");
+                var urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get("redirect") !== "settings") {
+                    window.location = "./settings.html?redirect=settings";
+                } else {
+                    _displayMessage("This page won't work until you set a Calorie Goal. Please log in to Fitbit or manually set your Calorie Goal in the settings page.");
+                }
 			} else {
 				_displayCalories(calories);
 			}
@@ -76,7 +81,7 @@ const script = function () {
 				if (data.goals) {
 					localStorage.setItem("authentication", JSON.stringify(_params));
 					document.getElementById("caloriesRemaining").textContent = data.goals.calories;
-					// save the new remaining calories
+                    // save the new remaining calories
 					localStorage.setItem("calories", data.goals.calories);
 					completeFunction(data.goals.calories);
 				} else {
@@ -89,7 +94,27 @@ const script = function () {
 		}
     }
 
-	// encodes the url parameters into an object
+    const _getLocalCalories = function () {
+        const floorDate = function (date) {
+            date.setHours(0);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            date.setMilliseconds(0);
+            return date;
+        }
+        const calories = localStorage.getItem("calories");
+        const lastEatenDateString = localStorage.getItem("lastEatenDate");
+        if (lastEatenDateString !== null) {
+            const date = floorDate(new Date(localStorage.getItem("lastEatenDate")));
+            const newDate = floorDate(new Date());
+            if (date !== newDate) {
+                return localStorage.getItem("calorieGoal");
+            }
+        }
+        return calories;
+    }
+
+    // encodes the url parameters into an object
     const _getUrlVars = function () {
         const vars = JSON.parse(localStorage.getItem("authentication")) || {};
         window.location.href.replace(/[?&#]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
@@ -117,135 +142,101 @@ const script = function () {
         }
     }
 
-	// post to fitbit to update remaining calories
+    // post to fitbit to update remaining calories
     const _updateFitbitCalories = function (calories) {
-		if (_params["access_token"] !== void 0) {
-			document.getElementById("caloriesRemaining").style.opacity = "0";
-			document.getElementById("mealIcon").src = "assets/images/loading.gif";
-			fetch("https://api.fitbit.com/1/user/" + _params["user_id"] + "/foods/log/goal.json?calories=" + calories, {
-				method: "POST",
-				headers: {
-					"Authorization": "Bearer " + _params["access_token"]
-				}
-			})
-			.then(function (result) {
-				return result.json();
-			})
-			.then(function (data) {
-				// if there are no goals (ie we got an error)
-				if (!data.goals) {
-					_deleteAccessToken();
-				}
-				// give the number changing a nice effect
-				_displayCalories(calories, 250);
-			});
-		} else {
-			_displayCalories(calories, 250);
-		}
-    }
-
-	// search for a food
-    const _searchRequest = function (event) {
-        event.preventDefault();
-        let headers = {
-            "x-app-key": "dda87a7beb9557383f39f2753bca8f84",
-            "x-remote-user-id": 0,
-            "x-app-id": "2aab2c41",
-            "Content-Type": "application/x-www-form-urlencoded"
+        if (_params["access_token"] !== void 0) {
+            document.getElementById("caloriesRemaining").style.opacity = "0";
+            document.getElementById("mealIcon").src = "assets/images/loading.gif";
+            fetch("https://api.fitbit.com/1/user/" + _params["user_id"] + "/foods/log/goal.json?calories=" + calories, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + _params["access_token"]
+                }
+            })
+                .then(function (result) {
+                    return result.json();
+                })
+                .then(function (data) {
+                    // if there are no goals (ie we got an error)
+                    if (!data.goals) {
+                        _deleteAccessToken();
+                    }
+                    // give the number changing a nice effect
+                    _displayCalories(calories, 250);
+                });
+        } else {
+            _displayCalories(calories, 250);
         }
-        let queryRequest = encodeURI(document.getElementById("searchInput").value);
-
-        let body = new URLSearchParams("query=" + queryRequest);
-
-        fetch('https://trackapi.nutritionix.com/v2/search/instant', {
-            method: 'Post',
-            body: body,
-            headers: headers
-        }).then(function (response) {
-            return response.json();
-        }).then(function (data) {
-            document.getElementById("form").reset();
-            console.log(data);
-
-            //resets the card section at the bottom
-            document.getElementById("cardContainer").innerHTML = "";
-            
-            data.branded.forEach(datum => {
-				const calories = parseInt(datum.nf_calories);
-                //clones template node
-                let template = document.getElementById("cardTemplate").children[0].cloneNode(true);
-
-                //takes name of Item
-                template.getElementsByClassName("card-header-title")[0].innerHTML = datum.food_name.toUpperCase();
-
-                //Adding the image to a new created div
-                let image = template.getElementsByClassName("food-image")[0];
-                image.src = datum.photo.thumb;
-
-                //Div for Information added
-                const caloriesDiv = template.getElementsByClassName("calories")[0];
-                caloriesDiv.innerHTML = calories;//Need to figure out solution for this area, endpoint for common doesn't give calories
-                template.getElementsByClassName("calories")[1].innerHTML = calories;
-				
-                const createButton = template.getElementsByClassName("ate-food-button")[0];
-				createButton.setAttribute("data-calories", calories);
-				createButton.addEventListener("click", function clickHandler() {
-					if (localStorage.getItem("calories") !== null) {
-						const caloriesEaten = parseInt(this.getAttribute("data-calories"));
-						const calories = parseInt(document.getElementById("caloriesRemaining").textContent) - caloriesEaten;
-						localStorage.setItem("calories", calories);
-						_updateFitbitCalories(calories);
-					} else {
-						_displayMessage("You cannot add these calories yet. Please log in to Fitbit or manually set your Calorie Goal in the settings page.");
-					}
-				});
-                //
-
-                document.getElementById("cardContainer").append(template);
-            });
-        });
+    }
+    
+    const _updateLocalCalories = function (caloriesRemaining, logDate) {
+        localStorage.setItem("calories", caloriesRemaining);
+        if (logDate) {
+            const date = new Date();
+            date.setDate(date.getDate() - 1);
+            localStorage.setItem("timeLastEaten", JSON.stringify(date));
+        }
     }
 
-	// run these things after the body has loaded since our script is in the head tag
+    // run these things after the body has loaded since our script is in the head tag
     document.addEventListener("DOMContentLoaded", function () {
         _params = _getUrlVars();
-		_getFitbitCalories();
-		// if there's an access token saved
-		_displayFitbitLogin(_params["access_token"] === void 0);
+        _getFitbitCalories();
+        // if there's an access token saved
+        _displayFitbitLogin(_params["access_token"] === void 0);
         _initBulma();
-		document.getElementById("fitbitLogoutButton").addEventListener("click", function () {
-			_deleteAccessToken();
-			_displayFitbitLogin(true);
-		});
-        document.getElementById("form").addEventListener("submit", _searchRequest);
-		document.getElementById("caloriesButton").addEventListener("click", function () {
-			if (localStorage.getItem("calories") !== null) {
-				document.getElementById("calorieLogModal").classList.add("is-active");
-			} else {
-				_displayMessage("You cannot log calories yet. Please log in to Fitbit or manually set your Calorie Goal in the settings page.");
-			}
-		});
-		document.querySelectorAll(".clear-form").forEach(
-			deleteButton => {
-				deleteButton.addEventListener("click", function () {_clearCaloriesModal(deleteButton)});
-			}
-		);
-		document.querySelectorAll(".close-modal").forEach(
-			deleteButton => {
-				deleteButton.addEventListener("click", function () {
-					this.closest(".modal").classList.remove("is-active");
-				});
-			}
-		);
-		document.getElementById("saveCalorieGoal").addEventListener("click", function () {
-			const caloriesEaten = parseInt(document.getElementById("caloriesEatenInput").value);
-			if (Number.isInteger(caloriesEaten)) {
-				let caloriesRemaining = parseInt(document.getElementById("caloriesRemaining").textContent);
-				caloriesRemaining = caloriesRemaining - caloriesEaten;
-				localStorage.setItem("calories", caloriesRemaining);
-				_updateFitbitCalories(caloriesRemaining);
-			}
-			_clearCaloriesModal(this);
-		});
+
+        document.getElementById("fitbitLogoutButton").addEventListener("click", function () {
+            _deleteAccessToken();
+            _displayFitbitLogin(true);
+        });
+        document.getElementById("caloriesButton").addEventListener("click", function () {
+            if (localStorage.getItem("calories") !== null) {
+                document.getElementById("calorieLogModal").classList.add("is-active");
+            } else {
+                _displayMessage("You cannot log calories yet. Please log in to Fitbit or manually set your Calorie Goal in the settings page.");
+            }
+        });
+        document.querySelectorAll(".clear-form").forEach(
+            deleteButton => {
+                deleteButton.addEventListener("click", function () { _clearCaloriesModal(deleteButton) });
+            }
+        );
+        document.querySelectorAll(".close-modal").forEach(
+            deleteButton => {
+                deleteButton.addEventListener("click", function () {
+                    this.closest(".modal").classList.remove("is-active");
+                });
+            }
+        );
+        document.getElementById("saveCalorieGoal").addEventListener("click", function () {
+            const caloriesEaten = parseInt(document.getElementById("caloriesEatenInput").value);
+            let foodInput = document.getElementById("foodEatenInput").value;
+            let myFoods = JSON.parse(localStorage.getItem("my_foods")) || [];
+            const myFood = {
+                food: foodInput,
+                calories: caloriesEaten,
+                date: JSON.stringify(new Date())
+            }
+            myFoods.push(myFood);
+            localStorage.setItem("my_foods", JSON.stringify(myFoods));
+            history.addHistoryItems();
+            if (Number.isInteger(caloriesEaten)) {
+                let caloriesRemaining = parseInt(document.getElementById("caloriesRemaining").textContent);
+                caloriesRemaining = caloriesRemaining - caloriesEaten;
+                this.updateCalories(caloriesRemaining, true);
+            }
+            _clearCaloriesModal(this);
+        });
     });
-}();
+
+    return {
+        displayMessage: function(message) {
+            _displayMessage(message);
+        },
+        updateCalories: function(calories, logDate) {
+            _updateFitbitCalories(calories);
+            _updateLocalCalories(calories, logDate);
+        }
+    }
+})();

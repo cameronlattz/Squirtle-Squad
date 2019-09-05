@@ -3,13 +3,13 @@ html {
 }
 body {
 	min-height: 100%;
-}
-body {
+	background-color: #9ddfef;
     background-image: url("../images/plate.jpg");
-    background-size: cover;
+    background-size: 100%;
     background-position-x: center;
     background-position-y: top;
 	background-attachment: fixed;
+	background-repeat: no-repeat;
 }
 #cardContainer .card {
     margin-top: 5px;
@@ -35,19 +35,6 @@ body {
 .template {
     display: none;
 }
-#manuel-input{
-    margin: 3rem 3rem 0 3rem;
-    background-color: whitesmoke;
-    padding: 2rem;
-    border-radius: 4px;
-    box-shadow: .3rem .3rem .3rem slategray;
-}
-#settings-table{
-    width: 50%;
-    margin: 2rem 25% 0 25%;
-    border-radius: 4px;
-    box-shadow: .3rem .3rem .3rem slategray;
-}
 .ate-food-button {
 	margin-right: 7px;
 	margin-top: 7px;
@@ -67,6 +54,7 @@ div.food-image-div {
 }
 #caloriesButton {
 	height: 100%;
+	border-radius: 0;
 }
 #searchField {
 	margin-bottom: 0.25rem;
@@ -76,4 +64,7 @@ div.food-image-div {
 }
 .message-footer {
 	padding-bottom: 5px;
+}
+#settings-table {
+	margin-top: 25px;
 }
